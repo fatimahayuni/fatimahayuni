@@ -38,6 +38,53 @@ Capsulify is built as a highly performant, type-safe fullstack web application u
 
   ----
 
+  ## System Architecture
+
+Capsulify follows a modern, decoupled fullstack architecture leveraging Next.js serverless primitives, secure third-party identity management, and a relational managed backend.
+
+### 🌐 Architectural Overview
+```text
+[ User Browser (Client) ]
+│
+│ (1) HTTPS Requests / User Interaction
+▼
+[ Next.js Serverless Layer (Vercel) ] ──(2) Verify JWT──► [ Clerk Auth API ]
+│
+│ (3) Data Fetch / Asset Stream
+▼
+[ Supabase Backend-as-a-Service ]
+├──► PostgreSQL Database (Relational State)
+└──► Storage Buckets (Media Assets / Image Layers)
+```
+
+
+### 📂 Core Architectural Layers
+
+#### 1. Client-Side Runtime (User's Browser)
+* **Presentation Layer:** Built with React component trees styled using utility classes. 
+* **State & Filter Pipelines:** Handles client-side view states, UI interaction loops, and optimistic interface updates.
+* **Authentication Context:** Managed via the Clerk React SDK, handling secure client-side session tokens and routing protection.
+
+#### 2. Serverless Application Layer (Vercel)
+* **Edge Middleware (`middleware.ts`):** Acting as the primary security gateway, it intercepts incoming requests to authenticated routes, extracts the bearer JWT, and verifies session health via Clerk before allowing downstream execution.
+* **Initialization (`instrumentation.ts`):** Boots at runtime to initialize application monitoring hooks, binding error boundary exceptions to Sentry.
+* **API Endpoints & Server Components:** Executes isolated backend logic, protecting sensitive keys and executing secure SQL queries against the database layer.
+
+#### 3. Managed Backend Layer (Supabase BaaS)
+* **Relational Database (PostgreSQL):** Stores relational schemas for wardrobe assets, user meta-mapping, and calculated outfit combinations.
+* **Object Storage:** A CDN-backed storage system optimized for uploading, hosting, and serving layered clothing images.
+
+---
+
+### 🔄 Data & Authentication Flow
+
+1. **Session Handshake:** The client requests a page. The Next.js `middleware.ts` intercepts the request and verifies the user's session with **Clerk**.
+2. **Authorized Routing:** If valid, the request is passed to the Next.js App Router server components.
+3. **Database Execution:** Server-side functions safely connect to **Supabase** using service roles to query user records or fetch asset tracking arrays from PostgreSQL.
+4. **Asset Resolution:** Image URLs pointing to Supabase Storage buckets
+
+---
+
 ### 🛠️ Current Technical Focus & Log (June 2026)
 I am currently treating the app as a live case study in refactoring and scaling. Here are the core architectural challenges I am actively documenting and tracking:<br><br>
 
